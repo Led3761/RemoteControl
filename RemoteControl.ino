@@ -24,8 +24,6 @@ const int centerButton = 2;
 enum Button{Up, Down, Left, Right, Center, None};
 
 unsigned long buttonPressedTime = 0;
-Button currentPressedButton = None;
-
 
 int currentSection = 0;
 
@@ -105,37 +103,30 @@ void lcdDrawSelection(int sectionNumber) {
 
 Button readButtonState() {
   unsigned long dif = millis() - buttonPressedTime;
-  Button pressed = None;  
-  
-  if (digitalRead(upButton)) {
-    buttonPressedTime = millis();
-    Serial.println("UP");
-    pressed = Up;
-  }
-//  else if (digitalRead(downButton)) {
-//    buttonPressedTime = millis();
-//    Serial.println("DOWN");
-//    pressed = Down;
-//  }
-//  else if (digitalRead(leftButton)) {
-//    buttonPressedTime = millis();
-//    Serial.println("LEFT");
-//    pressed = Left;
-//  }
-//  else if (digitalRead(rightButton)) {
-//    buttonPressedTime = millis();
-//    Serial.println("RIGHT");
-//    pressed = Right;
-//  }
-//  else if (digitalRead(centerButton)) {
-//    buttonPressedTime = millis();
-//    Serial.println("CENTER");
-//    pressed = Center;
-//  }
-  if (dif < 500 && currentPressedButton == pressed) {
+  if (dif < 100) {
     return None;
   }
-  currentPressedButton = pressed;
-  
-  return pressed;
+  if (digitalRead(upButton)) {
+    buttonPressedTime = millis();
+    return Up;
+  }
+  else if (digitalRead(downButton)) {
+    buttonPressedTime = millis();
+    return Down;
+  }
+  else if (digitalRead(leftButton)) {
+    buttonPressedTime = millis();
+    return Left;
+  }
+  else if (digitalRead(rightButton)) {
+    buttonPressedTime = millis();
+    return Right;
+  }
+  else if (digitalRead(centerButton)) {
+    buttonPressedTime = millis();
+    return Center;
+  }
+  else {
+    return None;
+  }
 }
