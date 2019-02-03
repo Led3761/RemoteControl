@@ -2,6 +2,10 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+
+#include "nRF24L01.h"
+#include "RF24.h"
+
 #include "icons.h"
 
 //******************************************
@@ -17,7 +21,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 
 enum Pages {StartPage, BoardChargePage, ConnectionPage, DrivingPage, GpsPage};
 
-Pages currentPage = DrivingPage;
+Pages currentPage = StartPage;
 
 int currentSection = 0; //Номер текущей секции
 
@@ -39,6 +43,10 @@ enum Button{Up, Down, Left, Right, Center, None};
 //******************************************
 //Инициализация RF24L01
 //******************************************
+RF24 radio(7,8);  // make sure this corresponds to the pins you are using
+const uint64_t pipes[2] = {0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
+unsigned long replyStartedWaitingAt = 0;
+
 bool boardConnected = false;
 
 //******************************************
@@ -69,7 +77,7 @@ RemoteControlData;
 //******************************************
 //Объявление глобальных переменных
 //******************************************
-BoardData boardData{100, 0.0, GpsConnected, false, Normal};
+BoardData boardData{100, 0.0, GpsDisconnected, false, Normal};
 RemoteControlData remoteControlData{0, 0, false, false, Normal};
 
 int remoteControlCharge = 100;
@@ -93,12 +101,21 @@ void setup() {
   pinMode(leftButton, INPUT);
   pinMode(rightButton, INPUT);
   pinMode(centerButton, INPUT);
+	
+	//Инициализация радио модуля
+	radio.begin();
+  radio.openWritingPipe(pipes[0]);
+  radio.openReadingPipe(1,pipes[1]);
+
 
 }
 
 unsigned long changeTime = 0;
 
 void loop() { 
+
+	radioTransmittReceive();
+	
   moveSelection(readButtonState());
 
   display.clearDisplay();
@@ -107,58 +124,24 @@ void loop() {
   lcdDrawSelection(currentPage, currentSection);
   display.display();
 
-//ANIMATION START
-  unsigned long dif = millis() - changeTime;
-  if (dif > 1000) {
-    changeTime = millis();
-    remoteControlCharge = remoteControlCharge - 10;
-    boardData.commonCharge = boardData.commonCharge - 10;
-    boardConnected = !boardConnected;
-    boardData.speed = boardData.speed + 1.25;
-    remoteControlData.acceleration = remoteControlData.acceleration + 1;
-    remoteControlData.braking = remoteControlData.braking +1;
+}
 
-    if (boardData.gpsState == GpsDisconnected) {
-      boardData.gpsTracking = !boardData.gpsTracking;
-    }
-    
-    if (boardData.gpsState == GpsDisconnected) {
-      boardData.gpsState = GpsConnecting;
-    }
-    else if (boardData.gpsState == GpsConnecting) {
-      boardData.gpsState = GpsConnected;
-    }
-    else if (boardData.gpsState == GpsConnected) {
-      boardData.gpsState = GpsDisconnected;
-    }
-
-    if (remoteControlData.drivingMode == Normal) {
-      remoteControlData.drivingMode = Extrime;
-    }
-    else if (remoteControlData.drivingMode == Extrime) {
-      remoteControlData.drivingMode = Safe;
-    }
-    else if (remoteControlData.drivingMode == Safe) {
-      remoteControlData.drivingMode = Normal;
-    }
+void radioTransmittReceive() {
+	radio.stopListening();
+  bool ok = radio.write( &remoteControlData, 
+												 sizeof(remoteControlData) );
+  radio.startListening();
+ 
+  if (radio.available()) {
+    radio.read( &boardData, sizeof(boardData) );
+    replyStartedWaitingAt = millis();
+    boardConnected = true;
   }
-
-  if (remoteControlCharge < 0) {
-    remoteControlCharge = 100;
+  else if (millis() - replyStartedWaitingAt > 250) {
+    Serial.println("Failed, response timed out.");
+    replyStartedWaitingAt = millis();
+    boardConnected = false;
   }
-  if (boardData.commonCharge < 0) {
-    boardData.commonCharge = 100;
-  }
-  if (boardData.speed > 99.9) {
-     boardData.speed = 0.0;
-  }
-  if (remoteControlData.acceleration > 3) {
-    remoteControlData.acceleration = 0;
-  }
-  if (remoteControlData.braking > 2) {
-    remoteControlData.braking = 0;
-  }
-  //ANIMATION STOP
 }
 
 Button readButtonState() {
@@ -409,6 +392,7 @@ void lcdDrawStartPage() {
       }
       else {
         gpsConnectingAnimationTime = millis();
+        display.drawBitmap(gpsOffset, 67, gpsConnecting1_16x16, 16, 16, 1);
       }
       break;
   }
@@ -485,6 +469,7 @@ void lcdDrawGpsPage() {
       }
       else {
         gpsConnectingAnimationTime = millis();
+        display.drawBitmap(8, 67, gpsConnecting1_16x16, 16, 16, 1);
       }
       break;
   }
