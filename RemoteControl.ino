@@ -17,7 +17,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 
 enum Pages {StartPage, BoardChargePage, ConnectionPage, DrivingPage, GpsPage};
 
-Pages currentPage = GpsPage;
+Pages currentPage = DrivingPage;
 
 int currentSection = 0; //Номер текущей секции
 
@@ -286,7 +286,7 @@ void lcdDrawPage(Pages page) {
       lcdDrawGpsPage();
 		break;
 		case DrivingPage:
-      lcdDrawBatteryPage();
+      lcdDrawDrivingPage();
 		break;
 		case BoardChargePage:
       lcdDrawBatteryPage();
@@ -540,8 +540,64 @@ void lcdDrawGpsPage() {
 	}
 }
 
-void lcdDrawModePage() {
+void lcdDrawDrivingPage() {
+	//********************************************************
+  //Section 0 Mode
+  //********************************************************
+  display.drawLine(2,53,29,53,1);
+  
+  display.setCursor(5, 57);
+  display.println("MODE");
 	
+	display.setCursor(5, 71);
+	switch (remoteControlData.drivingMode) {
+		case Normal:
+			display.println("norm");
+		break;
+		case Extrime:
+			display.println("ext.");
+		break;
+		case Safe:
+			display.println("safe");
+		break;
+	}
+	
+	//********************************************************
+  //Section Switcher
+  //********************************************************
+	if (currentSection == 0) {		
+		display.fillRect(3,86,27,11,1);
+		display.setTextColor(0);		
+		display.setCursor(5,88);
+		display.println("norm");
+		display.setTextColor(1);
+		display.setCursor(5,103);
+		display.println("ext.");
+		display.setCursor(5,118);
+		display.println("safe");
+	}
+	else if (currentSection == 1) {		
+		display.fillRect(3,101,27,11,1);			
+		display.setCursor(5,88);
+		display.println("norm");		
+		display.setCursor(5,103);
+		display.setTextColor(0);
+		display.println("ext.");
+		display.setTextColor(1);
+		display.setCursor(5,118);
+		display.println("safe");
+	}
+	else {		
+		display.fillRect(3,116,27,11,1);			
+		display.setCursor(5,88);
+		display.println("norm");		
+		display.setCursor(5,103);		
+		display.println("ext.");		
+		display.setCursor(5,118);
+		display.setTextColor(0);
+		display.println("safe");
+		display.setTextColor(1);
+	}
 }
 
 void lcdDrawBatteryPage() {
