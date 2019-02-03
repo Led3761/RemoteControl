@@ -17,7 +17,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 
 enum Pages {StartPage, BoardChargePage, ConnectionPage, DrivingPage, GpsPage};
 
-Pages currentPage = StartPage;
+Pages currentPage = GpsPage;
 
 int currentSection = 0; //Номер текущей секции
 
@@ -99,7 +99,7 @@ void setup() {
 unsigned long changeTime = 0;
 
 void loop() { 
-  moveSelection(currentPage, readButtonState());
+  moveSelection(readButtonState());
 
   display.clearDisplay();
   lcdDrawBase();
@@ -161,12 +161,157 @@ void loop() {
   //ANIMATION STOP
 }
 
+Button readButtonState() {
+  unsigned long dif = millis() - buttonPressedTime;
+  if (dif < 200) {
+    return None;
+  }
+  if (digitalRead(upButton)) {
+    buttonPressedTime = millis();
+    return Up;
+  }
+//  else if (digitalRead(downButton)) {
+//    buttonPressedTime = millis();
+//    return Down;
+//  }
+//  else if (digitalRead(leftButton)) {
+//    buttonPressedTime = millis();
+//    return Left;
+//  }
+//  else if (digitalRead(rightButton)) {
+//    buttonPressedTime = millis();
+//    return Right;
+//  }
+//  else if (digitalRead(centerButton)) {
+//    buttonPressedTime = millis();
+//    return Center;
+//  }
+  else {
+    return None;
+  }
+}
+
+void moveSelection(Button but) {
+  switch(but) {
+    case Up:
+      currentSection++;
+      break;
+    case Down:
+			currentSection--;
+		break;
+		case Right:
+			if (currentPage == StartPage) {
+				switch(currentSection) {
+					case 0:
+						currentPage = GpsPage;
+					break;
+					case 1:
+						currentPage = DrivingPage;
+					break;
+					case 2:
+						currentPage = BoardChargePage;
+					break;
+				}
+				currentSection = 0;
+			}
+		break;
+		case Left:
+			if (currentPage != StartPage) {
+				currentPage = StartPage;
+				currentSection = 0;
+			}
+		break;
+		case Center:
+			switch(currentPage) {
+				case GpsPage:
+					if (currentSection == 0) {
+						remoteControlData.gpsConnect = !remoteControlData.gpsConnect;
+					}
+					else if (currentSection == 1) {
+						remoteControlData.gpsStartTracking = !remoteControlData.gpsStartTracking;
+					}
+				break;
+				case DrivingPage:
+					if (currentSection == 0) {
+						remoteControlData.drivingMode = Normal;
+					}
+					else if (currentSection == 1) {
+						remoteControlData.drivingMode = Extrime;
+					}
+					else if (currentSection == 2) {
+						remoteControlData.drivingMode = Safe;
+					}
+				break;
+			}
+		break;
+  }
+
+  switch (currentPage) {
+    case StartPage:
+			if (currentSection > 2) {
+				currentSection = 0;
+			}
+			else if (currentSection < 0) {
+				currentSection = 2;
+			}
+			break;
+		case GpsPage:
+			if (currentSection > 1) {
+				currentSection = 0;
+			}
+			else if (currentSection < 0) {
+				currentSection = 1;
+			}
+			break;
+		case DrivingPage:
+			if (currentSection > 2) {
+				currentSection = 0;
+			}
+			else if (currentSection < 0) {
+				currentSection = 2;
+			}
+			break;
+		case BoardChargePage:
+			currentSection = 0;
+			break;
+  }
+}
+
 void lcdDrawPage(Pages page) {
   switch(page) {
     case StartPage:
       lcdDrawStartPage();
-      break;
+		break;
+		case GpsPage:
+      lcdDrawGpsPage();
+		break;
+		case DrivingPage:
+      lcdDrawBatteryPage();
+		break;
+		case BoardChargePage:
+      lcdDrawBatteryPage();
+		break;
   }  
+}
+
+void lcdDrawSelection(Pages page, int sectionNumber) {
+
+  switch (page) {
+    case StartPage: 
+      switch(sectionNumber) {
+      case 0:
+        display.drawRect(0, 53, 32, 31, 1);
+        break;
+      case 1:
+        display.drawRect(0, 83, 32 , 25, 1);
+        break;
+      case 2:
+        display.drawRect(0, 107, 32 , 20, 1);
+        break;
+      }
+    break;
+		//For other page selection draw in the page function
+  }
 }
 
 void lcdDrawBase() {
@@ -306,73 +451,99 @@ void lcdDrawStartPage() {
   }
 }
 
-void moveSelection(Pages page, Button but) {
-  switch(but) {
-    case Up:
-      currentSection++;
+void lcdDrawGpsPage() {
+	//********************************************************
+  //Section 0 GPS
+  //********************************************************
+  display.drawLine(2,53,29,53,1);
+  
+  display.setCursor(8, 57);
+  display.println("GPS");
+	//********************************************************
+  //GPS state
+  //********************************************************
+  switch(boardData.gpsState) {
+    case GpsConnected:
+      display.drawBitmap(8, 67, gpsConnected_16x16, 16, 16, 1);
       break;
-    case Down:
-      currentSection--;
+    case GpsDisconnected:
+      display.drawBitmap(8, 67, gpsDisconnected_16x16, 16, 16, 1);
       break;
-  }
-
-  switch (page) {
-    case StartPage:
-    if (currentSection > 2) {
-      currentSection = 0;
-    }
-    else if (currentSection < 0) {
-      currentSection = 2;
-    }
-    break;
-  }
-}
-
-void lcdDrawSelection(Pages page, int sectionNumber) {
-
-  switch (page) {
-    case StartPage: 
-      switch(sectionNumber) {
-      case 0:
-        display.drawRect(0, 53, 32, 31, 1);
-        break;
-      case 1:
-        display.drawRect(0, 83, 32 , 25, 1);
-        break;
-      case 2:
-        display.drawRect(0, 107, 32 , 20, 1);
-        break;
+    case GpsConnecting:
+      unsigned long diff = millis() - gpsConnectingAnimationTime;
+      if (diff < 250) {
+        display.drawBitmap(8, 67, gpsConnecting1_16x16, 16, 16, 1);
       }
-    break;
+      else if (diff < 500) {
+        display.drawBitmap(8, 67, gpsConnecting2_16x16, 16, 16, 1);
+      }
+      else if (diff < 750) {
+        display.drawBitmap(8, 67, gpsConnecting3_16x16, 16, 16, 1);
+      }
+      else if (diff < 1000) {
+        display.drawBitmap(8, 67, gpsConnecting4_16x16, 16, 16, 1);        
+      }
+      else {
+        gpsConnectingAnimationTime = millis();
+      }
+      break;
   }
+	//********************************************************
+  //GPS connect
+  //********************************************************
+	display.setCursor(5,86);
+	
+	if (currentSection == 0) {
+		display.fillRect(3,84,27,11,1);
+		display.setTextColor(0);
+		if (remoteControlData.gpsConnect) {			
+			display.println("dis.");
+		}
+		else {
+			display.println("con.");
+		}
+		display.setTextColor(1);
+	}
+	else {
+		if (remoteControlData.gpsConnect) {			
+			display.println("dis.");
+		}
+		else {
+			display.println("con.");
+		}
+	}
+	//********************************************************
+  //Section 1 Track
+  //********************************************************
+	display.drawLine(2,98,29,98,1);
+	display.drawBitmap(8, 99, route_16x16, 16, 16, 1);
+	display.setCursor(5,118);
+	if (currentSection == 1) {
+		display.fillRect(3,116,27,11,1);
+		display.setTextColor(0);
+		if (boardData.gpsTracking) {			
+			display.println("stop");
+		}
+		else {
+			display.println("strt");
+		}
+		display.setTextColor(1);
+	}
+	else {
+		if (boardData.gpsTracking) {			
+			display.println("stop");
+		}
+		else {
+			display.println("strt");
+		}
+		display.setTextColor(1);
+	}
 }
 
-Button readButtonState() {
-  unsigned long dif = millis() - buttonPressedTime;
-  if (dif < 100) {
-    return None;
-  }
-  if (digitalRead(upButton)) {
-    buttonPressedTime = millis();
-    return Up;
-  }
-//  else if (digitalRead(downButton)) {
-//    buttonPressedTime = millis();
-//    return Down;
-//  }
-//  else if (digitalRead(leftButton)) {
-//    buttonPressedTime = millis();
-//    return Left;
-//  }
-//  else if (digitalRead(rightButton)) {
-//    buttonPressedTime = millis();
-//    return Right;
-//  }
-//  else if (digitalRead(centerButton)) {
-//    buttonPressedTime = millis();
-//    return Center;
-//  }
-  else {
-    return None;
-  }
+void lcdDrawModePage() {
+	
+}
+
+void lcdDrawBatteryPage() {
+	
 }
