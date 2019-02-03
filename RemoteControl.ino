@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "icons.h"
 
 //******************************************
 //Инициализация кнопок
@@ -18,58 +19,10 @@ enum Pages {StartPage, BoardChargePage, ConnectionPage, DrivingPage, GpsPage};
 
 Pages currentPage = StartPage;
 
-const unsigned char PROGMEM battery25_32x16 [] = {
-0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0, 0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60,
-0x1B, 0x80, 0x00, 0x60, 0x1B, 0x80, 0x00, 0x70, 0x1B, 0x80, 0x00, 0x78, 0x1B, 0x80, 0x00, 0x7C,
-0x1B, 0x80, 0x00, 0x7C, 0x1B, 0x80, 0x00, 0x78, 0x1B, 0x80, 0x00, 0x70, 0x1B, 0x80, 0x00, 0x60,
-0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60, 0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0
-};
-const unsigned char PROGMEM battery50_32x16 [] = {
-0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0, 0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60,
-0x1B, 0x9C, 0x00, 0x60, 0x1B, 0x9C, 0x00, 0x70, 0x1B, 0x9C, 0x00, 0x78, 0x1B, 0x9C, 0x00, 0x7C,
-0x1B, 0x9C, 0x00, 0x7C, 0x1B, 0x9C, 0x00, 0x78, 0x1B, 0x9C, 0x00, 0x70, 0x1B, 0x9C, 0x00, 0x60,
-0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60, 0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0
-};
-const unsigned char PROGMEM battery75_32x16 [] = {
-0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0, 0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60,
-0x1B, 0x9C, 0xE0, 0x60, 0x1B, 0x9C, 0xE0, 0x70, 0x1B, 0x9C, 0xE0, 0x78, 0x1B, 0x9C, 0xE0, 0x7C,
-0x1B, 0x9C, 0xE0, 0x7C, 0x1B, 0x9C, 0xE0, 0x78, 0x1B, 0x9C, 0xE0, 0x70, 0x1B, 0x9C, 0xE0, 0x60,
-0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60, 0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0
-};
-const unsigned char PROGMEM battery100_32x16 [] = {
-0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0, 0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60,
-0x1B, 0x9C, 0xE7, 0x60, 0x1B, 0x9C, 0xE7, 0x70, 0x1B, 0x9C, 0xE7, 0x78, 0x1B, 0x9C, 0xE7, 0x7C,
-0x1B, 0x9C, 0xE7, 0x7C, 0x1B, 0x9C, 0xE7, 0x78, 0x1B, 0x9C, 0xE7, 0x70, 0x1B, 0x9C, 0xE7, 0x60,
-0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60, 0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0
-};
-const unsigned char PROGMEM batteryEmpty_32x16 [] = {
-0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0, 0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60,
-0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x70, 0x18, 0x00, 0x00, 0x78, 0x18, 0x00, 0x00, 0x7C,
-0x18, 0x00, 0x00, 0x7C, 0x18, 0x00, 0x00, 0x78, 0x18, 0x00, 0x00, 0x70, 0x18, 0x00, 0x00, 0x60,
-0x18, 0x00, 0x00, 0x60, 0x18, 0x00, 0x00, 0x60, 0x1F, 0xFF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xE0
-};
-const unsigned char PROGMEM connected_16x16 [] = {
-0x00, 0x02, 0x00, 0x07, 0x01, 0xFE, 0x03, 0xFC, 0x07, 0x3C, 0x0C, 0x7C, 0x1C, 0x2C, 0x38, 0x0C,
-0x30, 0x1C, 0x34, 0x38, 0x3E, 0x70, 0x3C, 0xE0, 0x3F, 0xC0, 0x7F, 0x80, 0xE0, 0x00, 0xC0, 0x00
-};
-const unsigned char PROGMEM disconnected_16x16 [] = {
-0x00, 0x0F, 0x03, 0xF9, 0x06, 0x01, 0x0C, 0x03, 0x18, 0xC2, 0x31, 0x82, 0x63, 0x52, 0x46, 0x32,
-0x4C, 0x62, 0x4A, 0xC6, 0x41, 0x8C, 0x43, 0x18, 0xC0, 0x30, 0x80, 0x60, 0x9F, 0xC0, 0xF0, 0x00
-};
-const unsigned char PROGMEM gpsConnected_16x16 [] = {
-0x00, 0x00, 0x00, 0x00, 0x07, 0xE0, 0x1F, 0xF8, 0x3C, 0x3C, 0x11, 0xCC, 0x73, 0xCE, 0x6B, 0xC6,
-0x6D, 0x86, 0x6C, 0xE2, 0x69, 0xE2, 0x71, 0xEE, 0x11, 0xC8, 0x3C, 0x3C, 0x1F, 0xE0, 0x07, 0xE0
-};
-const unsigned char PROGMEM gpsConnecting_16x16 [] = {
-0x00, 0x00, 0x00, 0x00, 0x07, 0xE0, 0x0F, 0xF0, 0x04, 0x20, 0x21, 0xC4, 0x73, 0xCE, 0x6B, 0xC6,
-0x6D, 0x86, 0x6C, 0xE6, 0x69, 0xE6, 0x71, 0xEE, 0x21, 0xC4, 0x04, 0x20, 0x0F, 0xF0, 0x07, 0xE0
-};
-const unsigned char PROGMEM gpsDisconnected_16x16 [] = {
-0x00, 0x00, 0x00, 0x00, 0x07, 0xCC, 0x1F, 0x9C, 0x3C, 0x38, 0x31, 0x70, 0x72, 0xE6, 0x69, 0xC6,
-0x6B, 0x86, 0x67, 0x66, 0x4E, 0xE6, 0x1D, 0xEE, 0x39, 0xCC, 0x70, 0x3C, 0x67, 0xF0, 0x07, 0xE0
-};
+int currentSection = 0; //Номер текущей секции
 
-int currentSection = 1; //Номер текущей секции
+unsigned long buttonPressedTime = 0;
+unsigned long gpsConnectingAnimationTime = 0;
 
 //******************************************
 //Инициализация кнопок
@@ -82,7 +35,6 @@ const int rightButton = 3;
 const int centerButton = 2;
 
 enum Button{Up, Down, Left, Right, Center, None};
-unsigned long buttonPressedTime = 0;
 
 //******************************************
 //Инициализация RF24L01
@@ -98,6 +50,7 @@ enum GpsState {GpsConnected, GpsConnecting, GpsDisconnected};
 
 typedef struct {
   int commonCharge;
+  float speed;
   GpsState gpsState;
   bool gpsTracking;
   DrivingMode drivingMode;  
@@ -116,8 +69,9 @@ RemoteControlData;
 //******************************************
 //Объявление глобальных переменных
 //******************************************
-BoardData boardData{65, GpsConnected, false, Normal};
+BoardData boardData{100, 0.0, GpsConnected, false, Normal};
 RemoteControlData remoteControlData{0, 0, false, false, Normal};
+
 int remoteControlCharge = 100;
 
 void setup() {
@@ -142,80 +96,217 @@ void setup() {
 
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:  
-  moveSelection(readButtonState());
+unsigned long changeTime = 0;
+
+void loop() { 
+  moveSelection(currentPage, readButtonState());
+
+  display.clearDisplay();
+  lcdDrawBase();
+  lcdDrawPage(currentPage);
+  lcdDrawSelection(currentPage, currentSection);
+  display.display();
+
+//ANIMATION START
+  unsigned long dif = millis() - changeTime;
+  if (dif > 1000) {
+    changeTime = millis();
+    remoteControlCharge = remoteControlCharge - 10;
+    boardData.commonCharge = boardData.commonCharge - 10;
+    boardConnected = !boardConnected;
+    boardData.speed = boardData.speed + 1.25;
+    remoteControlData.acceleration = remoteControlData.acceleration + 1;
+    remoteControlData.braking = remoteControlData.braking +1;
+
+    if (boardData.gpsState == GpsDisconnected) {
+      boardData.gpsTracking = !boardData.gpsTracking;
+    }
+    
+    if (boardData.gpsState == GpsDisconnected) {
+      boardData.gpsState = GpsConnecting;
+    }
+    else if (boardData.gpsState == GpsConnecting) {
+      boardData.gpsState = GpsConnected;
+    }
+    else if (boardData.gpsState == GpsConnected) {
+      boardData.gpsState = GpsDisconnected;
+    }
+
+    if (remoteControlData.drivingMode == Normal) {
+      remoteControlData.drivingMode = Extrime;
+    }
+    else if (remoteControlData.drivingMode == Extrime) {
+      remoteControlData.drivingMode = Safe;
+    }
+    else if (remoteControlData.drivingMode == Safe) {
+      remoteControlData.drivingMode = Normal;
+    }
+  }
+
+  if (remoteControlCharge < 0) {
+    remoteControlCharge = 100;
+  }
+  if (boardData.commonCharge < 0) {
+    boardData.commonCharge = 100;
+  }
+  if (boardData.speed > 99.9) {
+     boardData.speed = 0.0;
+  }
+  if (remoteControlData.acceleration > 3) {
+    remoteControlData.acceleration = 0;
+  }
+  if (remoteControlData.braking > 2) {
+    remoteControlData.braking = 0;
+  }
+  //ANIMATION STOP
+}
+
+void lcdDrawPage(Pages page) {
+  switch(page) {
+    case StartPage:
+      lcdDrawStartPage();
+      break;
+  }  
 }
 
 void lcdDrawBase() {
-  display.clearDisplay();
-  display.drawRect(0, 0, 32 , 128, 1);
-  display.display();
-
-}
-
-void lcdDrawPage(Pages page, int section) {
-  display.clearDisplay();
-  switch(page) {
-    case StartPage:
-      lcdDrawBasePage();
-      lcdDrawSelection(section);
-      break;
-  }
-  display.display();
-  
-}
-
-void lcdDrawBasePage() {
-  //Section 1
-  display.setCursor(6,2);
-  display.println(String(remoteControlCharge)+"%");
+  //Section 0 Common
+  //********************************************************
+  //BoardConnection
+  //********************************************************
   if (boardConnected) {
-    display.drawBitmap(8, 10, connected_16x16, 16, 16, 1);
+    display.drawBitmap(0, 0, connected_16x16, 16, 16, 1);
   }
   else {
-    display.drawBitmap(8, 10, disconnected_16x16, 16, 16, 1);
+    display.drawBitmap(0, 0, disconnected_16x16, 16, 16, 1);
   }
-  //Section 2
-  if (boardData.commonCharge <= 10) {
-    display.drawBitmap(0, 32, batteryEmpty_32x16, 32, 16, 1);
+  //********************************************************
+  //RemoteCharge
+  //********************************************************
+  if (remoteControlCharge <= 10) {
+    display.drawBitmap(16, 0, battery0_16x16, 16, 16, 1);
   }
-  else if (boardData.commonCharge <= 25) {
-    display.drawBitmap(0, 32, battery25_32x16, 32, 16, 1);
+  else if (remoteControlCharge <= 25) {
+    display.drawBitmap(16, 0, battery25_16x16, 16, 16, 1);
   }
-  else if (boardData.commonCharge <= 50) {
-    display.drawBitmap(0, 32, battery50_32x16, 32, 16, 1);
+  else if (remoteControlCharge <= 50) {
+    display.drawBitmap(16, 0, battery50_16x16, 16, 16, 1);
   }
-  else if (boardData.commonCharge <= 75) {
-    display.drawBitmap(0, 32, battery75_32x16, 32, 16, 1);
+  else if (remoteControlCharge <= 75) {
+    display.drawBitmap(16, 0, battery75_16x16, 16, 16, 1);
   }
   else {
-    display.drawBitmap(0, 32, battery100_32x16, 32, 16, 1);
+    display.drawBitmap(16, 0, battery100_16x16, 16, 16, 1);
   }
-  //Section 3
-  display.setCursor(7,52);
-  display.println("gps");
+  //********************************************************
+  //Speed
+  //********************************************************
+  if (boardData.speed < 10) {
+    display.setCursor(5,20);
+  }
+  else {
+    display.setCursor(2,20);
+  }
+  display.println(String(boardData.speed));
+  display.setCursor(5,30);
+  display.println("km/h");
+  //********************************************************
+  //Direction
+  //********************************************************
+  if (remoteControlData.acceleration > 0) {
+    display.drawBitmap(0, 37, moveForward_16x16, 16, 16, 1);
+  }
+  if (remoteControlData.braking > 0) {
+    display.drawBitmap(16, 37, moveBackward_16x16, 16, 16, 1);
+  }
+}
+
+void lcdDrawStartPage() {
+  //********************************************************
+  //Section 1 GPS
+  //********************************************************
+  display.drawLine(2,53,29,53,1);
+  
+  display.setCursor(8, 57);
+  display.println("GPS");
+  //********************************************************
+  //Route state
+  //********************************************************
+  int gpsOffset = 8;
+  if (boardData.gpsTracking) {
+    gpsOffset = 0;
+    display.drawBitmap(16, 67, route_16x16, 16, 16, 1);
+  }
+
+  //********************************************************
+  //GPS state
+  //********************************************************
   switch(boardData.gpsState) {
     case GpsConnected:
-      display.drawBitmap(1, 60, gpsConnected_16x16, 16, 16, 1);
-      break;
-    case GpsConnecting:
-      display.drawBitmap(1, 60, gpsConnecting_16x16, 16, 16, 1);
+      display.drawBitmap(gpsOffset, 67, gpsConnected_16x16, 16, 16, 1);
       break;
     case GpsDisconnected:
-      display.drawBitmap(1, 60, gpsDisconnected_16x16, 16, 16, 1);
+      display.drawBitmap(gpsOffset, 67, gpsDisconnected_16x16, 16, 16, 1);
+      break;
+    case GpsConnecting:
+      unsigned long diff = millis() - gpsConnectingAnimationTime;
+      if (diff < 250) {
+        display.drawBitmap(gpsOffset, 67, gpsConnecting1_16x16, 16, 16, 1);
+      }
+      else if (diff < 500) {
+        display.drawBitmap(gpsOffset, 67, gpsConnecting2_16x16, 16, 16, 1);
+      }
+      else if (diff < 750) {
+        display.drawBitmap(gpsOffset, 67, gpsConnecting3_16x16, 16, 16, 1);
+      }
+      else if (diff < 1000) {
+        display.drawBitmap(gpsOffset, 67, gpsConnecting4_16x16, 16, 16, 1);        
+      }
+      else {
+        gpsConnectingAnimationTime = millis();
+      }
       break;
   }
-  //Section 4
-  display.setCursor(2,80);
-  display.fillRect(0, 78, 32 , 25, 1);
-  float boardSpeed = 55.5;
-  display.setTextColor(BLACK);
-  display.println(String(boardSpeed)+"\nnorm"+"\nextrim");
-  display.setTextColor(WHITE);
+  //********************************************************
+  //Section 2 MODE
+  //********************************************************
+  display.drawLine(2,83,29,83,1);
+
+  display.setCursor(5, 92);
+  switch(remoteControlData.drivingMode) {
+    case Normal:
+      display.println("Norm");
+      break;
+    case Extrime:
+      display.println("Ext.");
+      break;
+    case Safe:
+      display.println("Safe");
+      break;
+  }
+
+  display.drawLine(2,107,29,107,1);
+  //********************************************************
+  //Section 3 Board Charge
+  //********************************************************
+  if (boardData.commonCharge <= 10) {
+    display.drawBitmap(0, 110, battery0_32x16, 32, 16, 1);
+  }
+  else if (boardData.commonCharge <= 25) {
+    display.drawBitmap(0, 110, battery25_32x16, 32, 16, 1);
+  }
+  else if (boardData.commonCharge <= 50) {
+    display.drawBitmap(0, 110, battery50_32x16, 32, 16, 1);
+  }
+  else if (boardData.commonCharge <= 75) {
+    display.drawBitmap(0, 110, battery75_32x16, 32, 16, 1);
+  }
+  else {
+    display.drawBitmap(0, 110, battery100_32x16, 32, 16, 1);
+  }
 }
 
-void moveSelection(Button but) {
+void moveSelection(Pages page, Button but) {
   switch(but) {
     case Up:
       currentSection++;
@@ -225,33 +316,34 @@ void moveSelection(Button but) {
       break;
   }
 
-  if (currentSection > 4) {
-    currentSection = 1;
+  switch (page) {
+    case StartPage:
+    if (currentSection > 2) {
+      currentSection = 0;
+    }
+    else if (currentSection < 0) {
+      currentSection = 2;
+    }
+    break;
   }
-  else if (currentSection < 1) {
-    currentSection = 4;
-  }
-
-  lcdDrawPage(currentPage, currentSection);
 }
 
-void lcdDrawSelection(int sectionNumber) {
-  switch(sectionNumber) {
-    case 0:
-      display.drawRect(0, 0, 32 , 28, 1);
-      break;
-    case 1:
-      display.drawRect(0, 28, 32 , 25, 1);
-      break;
-    case 2:
-      display.drawRect(0, 53, 32 , 25, 1);
-      break;
-    case 3:
-      display.drawRect(0, 78, 32 , 25, 1);
-      break;
-    case 4:
-      display.drawRect(0, 103, 32 , 25, 1);
-      break;
+void lcdDrawSelection(Pages page, int sectionNumber) {
+
+  switch (page) {
+    case StartPage: 
+      switch(sectionNumber) {
+      case 0:
+        display.drawRect(0, 53, 32, 31, 1);
+        break;
+      case 1:
+        display.drawRect(0, 83, 32 , 25, 1);
+        break;
+      case 2:
+        display.drawRect(0, 107, 32 , 20, 1);
+        break;
+      }
+    break;
   }
 }
 
