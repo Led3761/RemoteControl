@@ -538,12 +538,17 @@ void lcdDrawGpsPage() {
   //Section 1 Track
   //********************************************************
 	display.drawLine(2,98,29,98,1);
-	display.drawBitmap(8, 99, route_16x16, 16, 16, 1);
+	if (boardData.gpsTracking) {			
+			display.drawBitmap(8, 99, route_16x16, 16, 16, 1);
+		}
+	else {
+		display.drawBitmap(8, 99, noRoute_16x16, 16, 16, 1);
+	}
 	display.setCursor(5,118);
 	if (currentSection == 1) {
 		display.fillRect(3,116,27,11,1);
 		display.setTextColor(0);
-		if (boardData.gpsTracking) {			
+		if (remoteControlData.gpsStartTracking) {			
 			display.println("stop");
 		}
 		else {
@@ -552,7 +557,7 @@ void lcdDrawGpsPage() {
 		display.setTextColor(1);
 	}
 	else {
-		if (boardData.gpsTracking) {			
+		if (remoteControlData.gpsStartTracking) {			
 			display.println("stop");
 		}
 		else {
