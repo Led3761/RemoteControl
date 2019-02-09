@@ -142,7 +142,7 @@ void processAnalogInput() {
     if (analogSpeed < analogDeadZone) {
       analogSpeed = 0;
     }
-    remoteControlData.acceleration = analogSpeed;
+    remoteControlData.acceleration = int((float(analogSpeed)/float(1024-analogZeroMark - analogDeadZone))*100);
     remoteControlData.braking = 0;
   }
   else {
@@ -150,7 +150,7 @@ void processAnalogInput() {
       analogSpeed = 0;
     }
     remoteControlData.acceleration = 0;
-    remoteControlData.braking = abs(analogSpeed);
+    remoteControlData.braking = int(float(abs(analogSpeed))/float(analogZeroMark - analogDeadZone)*100);
   }
 }
 
