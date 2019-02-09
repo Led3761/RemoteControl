@@ -171,16 +171,16 @@ void radioTransmittReceive() {
     boardConnected = false;
   }
 
-  Serial.print("Acceleration: ");
-  Serial.println(remoteControlData.acceleration);
-  Serial.print("Braking: ");
-  Serial.println(remoteControlData.braking);
-  Serial.print("Gps Connect: ");
-  Serial.println(remoteControlData.gpsConnect);
-  Serial.print("Gps Start tracking: ");
-  Serial.println(remoteControlData.gpsStartTracking);
-  Serial.print("Driving Mode: ");
-  Serial.println(remoteControlData.drivingMode);
+//  Serial.print("Acceleration: ");
+//  Serial.println(remoteControlData.acceleration);
+//  Serial.print("Braking: ");
+//  Serial.println(remoteControlData.braking);
+//  Serial.print("Gps Connect: ");
+//  Serial.println(remoteControlData.gpsConnect);
+//  Serial.print("Gps Start tracking: ");
+//  Serial.println(remoteControlData.gpsStartTracking);
+//  Serial.print("Driving Mode: ");
+//  Serial.println(remoteControlData.drivingMode);
 }
 
 Button readButtonState() {
