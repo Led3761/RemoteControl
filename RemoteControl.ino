@@ -97,10 +97,15 @@ void setup() {
 
   //Инициализация входов для кнопок
   pinMode(upButton, INPUT);
+  digitalWrite(upButton, HIGH);
   pinMode(downButton, INPUT);
+  digitalWrite(downButton, HIGH);
   pinMode(leftButton, INPUT);
+  digitalWrite(leftButton, HIGH);
   pinMode(rightButton, INPUT);
+  digitalWrite(rightButton, HIGH);
   pinMode(centerButton, INPUT);
+  digitalWrite(centerButton, HIGH);
 	
 	//Инициализация радио модуля
 	radio.begin();
@@ -149,26 +154,26 @@ Button readButtonState() {
   if (dif < 200) {
     return None;
   }
-  if (digitalRead(upButton)) {
+  if (!digitalRead(upButton)) {
     buttonPressedTime = millis();
     return Up;
   }
-//  else if (digitalRead(downButton)) {
-//    buttonPressedTime = millis();
-//    return Down;
-//  }
-//  else if (digitalRead(leftButton)) {
-//    buttonPressedTime = millis();
-//    return Left;
-//  }
-//  else if (digitalRead(rightButton)) {
-//    buttonPressedTime = millis();
-//    return Right;
-//  }
-//  else if (digitalRead(centerButton)) {
-//    buttonPressedTime = millis();
-//    return Center;
-//  }
+  else if (!digitalRead(downButton)) {
+    buttonPressedTime = millis();
+    return Down;
+  }
+  else if (!digitalRead(leftButton)) {
+    buttonPressedTime = millis();
+    return Left;
+  }
+  else if (!digitalRead(rightButton)) {
+    buttonPressedTime = millis();
+    return Right;
+  }
+  else if (!digitalRead(centerButton)) {
+    buttonPressedTime = millis();
+    return Center;
+  }
   else {
     return None;
   }
@@ -177,26 +182,10 @@ Button readButtonState() {
 void moveSelection(Button but) {
   switch(but) {
     case Up:
-      currentSection++;
+      currentSection--;
       break;
     case Down:
-			currentSection--;
-		break;
-		case Right:
-			if (currentPage == StartPage) {
-				switch(currentSection) {
-					case 0:
-						currentPage = GpsPage;
-					break;
-					case 1:
-						currentPage = DrivingPage;
-					break;
-					case 2:
-						currentPage = BoardChargePage;
-					break;
-				}
-				currentSection = 0;
-			}
+			currentSection++;
 		break;
 		case Left:
 			if (currentPage != StartPage) {
@@ -206,6 +195,20 @@ void moveSelection(Button but) {
 		break;
 		case Center:
 			switch(currentPage) {
+        case StartPage:
+          switch(currentSection) {
+          case 0:
+            currentPage = GpsPage;
+          break;
+          case 1:
+            currentPage = DrivingPage;
+          break;
+          case 2:
+            currentPage = BoardChargePage;
+          break;
+          }
+          currentSection = 0;
+        break;
 				case GpsPage:
 					if (currentSection == 0) {
 						remoteControlData.gpsConnect = !remoteControlData.gpsConnect;
