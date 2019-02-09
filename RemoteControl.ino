@@ -40,6 +40,9 @@ const int centerButton = 2;
 
 enum Button{Up, Down, Left, Right, Center, None};
 
+const int analogZeroMark = 558;
+const int analogDeadZone = 3;
+
 //******************************************
 //Инициализация RF24L01
 //******************************************
@@ -118,6 +121,7 @@ void setup() {
 unsigned long changeTime = 0;
 
 void loop() { 
+  processAnalogInput();
 
 	radioTransmittReceive();
 	
@@ -127,8 +131,27 @@ void loop() {
   lcdDrawBase();
   lcdDrawPage(currentPage);
   lcdDrawSelection(currentPage, currentSection);
-  display.display();
+  display.display();  
+}
 
+void processAnalogInput() {
+  int analogIn = analogRead(A0);
+  int analogSpeed = analogIn - analogZeroMark;
+
+  if (analogSpeed > 0) {
+    if (analogSpeed < analogDeadZone) {
+      analogSpeed = 0;
+    }
+    remoteControlData.acceleration = analogSpeed;
+    remoteControlData.braking = 0;
+  }
+  else {
+    if (abs(analogSpeed) < analogDeadZone) {
+      analogSpeed = 0;
+    }
+    remoteControlData.acceleration = 0;
+    remoteControlData.braking = abs(analogSpeed);
+  }
 }
 
 void radioTransmittReceive() {
@@ -147,6 +170,17 @@ void radioTransmittReceive() {
     replyStartedWaitingAt = millis();
     boardConnected = false;
   }
+
+  Serial.print("Acceleration: ");
+  Serial.println(remoteControlData.acceleration);
+  Serial.print("Braking: ");
+  Serial.println(remoteControlData.braking);
+  Serial.print("Gps Connect: ");
+  Serial.println(remoteControlData.gpsConnect);
+  Serial.print("Gps Start tracking: ");
+  Serial.println(remoteControlData.gpsStartTracking);
+  Serial.print("Driving Mode: ");
+  Serial.println(remoteControlData.drivingMode);
 }
 
 Button readButtonState() {
