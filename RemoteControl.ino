@@ -46,7 +46,7 @@ const int analogDeadZone = 3;
 //******************************************
 //Инициализация RF24L01
 //******************************************
-RF24 radio(7,8);  // make sure this corresponds to the pins you are using
+RF24 radio(9,10);  // make sure this corresponds to the pins you are using
 const uint64_t pipes[2] = {0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
 unsigned long replyStartedWaitingAt = 0;
 
@@ -78,12 +78,25 @@ typedef struct {
 RemoteControlData;
 
 //******************************************
+//Контроль заряда батареи пульта
+//******************************************
+enum BatteryState{Charging, Charged, InUse};
+
+typedef struct {
+  BatteryState state;
+  int charge; 
+}
+RemoteControlBatteryData;
+
+const int batteryStdBy = 7;
+const int batteryCharg = 8;
+
+//******************************************
 //Объявление глобальных переменных
 //******************************************
 BoardData boardData{100, 0.0, GpsDisconnected, false, Normal};
 RemoteControlData remoteControlData{0, 0, false, false, Normal};
-
-int remoteControlCharge = 100;
+RemoteControlBatteryData remoteControlBatteryData{InUse, 0};
 
 void setup() {
   Serial.begin(9600);
@@ -109,6 +122,12 @@ void setup() {
   digitalWrite(rightButton, HIGH);
   pinMode(centerButton, INPUT);
   digitalWrite(centerButton, HIGH);
+
+  //Инициализация входов для состояния зарядки батареи
+  pinMode(batteryStdBy, INPUT);
+  digitalWrite(batteryStdBy, HIGH);
+  pinMode(batteryCharg, INPUT);
+  digitalWrite(batteryCharg, HIGH);
 	
 	//Инициализация радио модуля
 	radio.begin();
@@ -121,6 +140,7 @@ void setup() {
 unsigned long changeTime = 0;
 
 void loop() { 
+  processRemoteBatteryState();
   processAnalogInput();
 
 	radioTransmittReceive();
@@ -132,6 +152,22 @@ void loop() {
   lcdDrawPage(currentPage);
   lcdDrawSelection(currentPage, currentSection);
   display.display();  
+}
+
+void processRemoteBatteryState() {
+  int remoteCharge = analogRead(A1);
+  float remoteChargeVoltage = (float)remoteCharge * 5. / 1024.;
+  remoteControlBatteryData.charge = (remoteChargeVoltage - 3.0)/1.2*100;
+
+  if (!digitalRead(batteryCharg)) {
+    remoteControlBatteryData.state = Charged;
+  }
+  else if (!digitalRead(batteryStdBy)) {
+    remoteControlBatteryData.state = Charging;
+  }
+  else {
+    remoteControlBatteryData.state = InUse;
+  }
 }
 
 void processAnalogInput() {
@@ -348,20 +384,28 @@ void lcdDrawBase() {
   //********************************************************
   //RemoteCharge
   //********************************************************
-  if (remoteControlCharge <= 10) {
-    display.drawBitmap(16, 0, battery0_16x16, 16, 16, 1);
+  if (remoteControlBatteryData.state == Charging) {
+    display.drawBitmap(16, 0, batteryCharge_16x16, 16, 16, 1);
   }
-  else if (remoteControlCharge <= 25) {
-    display.drawBitmap(16, 0, battery25_16x16, 16, 16, 1);
-  }
-  else if (remoteControlCharge <= 50) {
-    display.drawBitmap(16, 0, battery50_16x16, 16, 16, 1);
-  }
-  else if (remoteControlCharge <= 75) {
-    display.drawBitmap(16, 0, battery75_16x16, 16, 16, 1);
+  else if (remoteControlBatteryData.state == Charged) {
+    display.drawBitmap(16, 0, batteryFullCharge_16x16, 16, 16, 1);
   }
   else {
-    display.drawBitmap(16, 0, battery100_16x16, 16, 16, 1);
+    if (remoteControlBatteryData.charge <= 10) {
+      display.drawBitmap(16, 0, battery0_16x16, 16, 16, 1);
+    }
+    else if (remoteControlBatteryData.charge <= 25) {
+      display.drawBitmap(16, 0, battery25_16x16, 16, 16, 1);
+    }
+    else if (remoteControlBatteryData.charge <= 50) {
+      display.drawBitmap(16, 0, battery50_16x16, 16, 16, 1);
+    }
+    else if (remoteControlBatteryData.charge <= 75) {
+      display.drawBitmap(16, 0, battery75_16x16, 16, 16, 1);
+    }
+    else {
+      display.drawBitmap(16, 0, battery100_16x16, 16, 16, 1);
+    }
   }
   //********************************************************
   //Speed
